@@ -1,4 +1,4 @@
-package org.fxmisc.flowless;
+package io.github.palexdev.flowless;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -6,7 +6,6 @@ import javafx.scene.Scene;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -14,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 public class BigCellCreationAndLayoutEfficiencyTest extends FlowlessTestBase {
 
     private ObservableList<String> items;
-    private Counter cellCreations = new Counter();
+    private final Counter cellCreations = new Counter();
     private VirtualFlow<String, ?> flow;
 
     @Override
@@ -30,7 +29,7 @@ public class BigCellCreationAndLayoutEfficiencyTest extends FlowlessTestBase {
                     cellCreations.inc();
                     Region reg = new Region();
                     reg.setStyle("-fx-background-color: " + color);
-                    if ( color.equals( "purple" ) ) reg.setPrefHeight(500.0);
+                    if (color.equals("purple")) reg.setPrefHeight(500.0);
                     else reg.setPrefHeight(100.0);
                     return Cell.wrapNode(reg);
                 });
@@ -42,7 +41,7 @@ public class BigCellCreationAndLayoutEfficiencyTest extends FlowlessTestBase {
 
     @Test // Relates to issue #70
     public void having_a_very_tall_item_in_viewport_only_creates_and_lays_out_cell_once() {
-    	// if this fails then it's probably because the very big purple cell is being created multiple times
+        // if this fails then it's probably because the very big purple cell is being created multiple times
         assertEquals(4, cellCreations.get());
     }
 

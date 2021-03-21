@@ -1,17 +1,16 @@
-package org.fxmisc.flowless;
-
-import java.util.Optional;
-import java.util.function.Function;
+package io.github.palexdev.flowless;
 
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.input.ScrollEvent;
-
 import org.reactfx.EventStreams;
 import org.reactfx.Subscription;
 import org.reactfx.collection.LiveList;
 import org.reactfx.collection.MemoizationList;
 import org.reactfx.collection.QuasiListModification;
+
+import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Tracks all of the cells that the viewport can display ({@link #cells}) and which cells the viewport is currently
@@ -47,7 +46,9 @@ final class CellListManager<T, C extends Cell<T, ? extends Node>> {
         cellPool.dispose();
     }
 
-    /** Gets the list of nodes that the viewport is displaying */
+    /**
+     * Gets the list of nodes that the viewport is displaying
+     */
     public ObservableList<Node> getNodes() {
         return cellNodes;
     }
@@ -77,7 +78,7 @@ final class CellListManager<T, C extends Cell<T, ? extends Node>> {
      * Updates the list of cells to display
      *
      * @param fromItem the index of the first item to display
-     * @param toItem the index of the last item to display
+     * @param toItem   the index of the last item to display
      */
     public void cropTo(int fromItem, int toItem) {
         fromItem = Math.max(fromItem, 0);
@@ -92,9 +93,7 @@ final class CellListManager<T, C extends Cell<T, ? extends Node>> {
         // apply CSS when the cell is first added to the scene
         Node node = cell.getNode();
         EventStreams.nonNullValuesOf(node.sceneProperty())
-                .subscribeForOne(scene -> {
-                    node.applyCss();
-                });
+                .subscribeForOne(scene -> node.applyCss());
 
         // Make cell initially invisible.
         // It will be made visible when it is positioned.
@@ -117,13 +116,13 @@ final class CellListManager<T, C extends Cell<T, ? extends Node>> {
      * Push scroll events received by cell nodes directly to
      * the 'owner' Node. (Generally likely to be a VirtualFlow
      * but not required.)
-     *
+     * <p>
      * Normal bubbling of scroll events gets interrupted during
      * a scroll gesture when the Cell's Node receiving the event
      * has moved out of the viewport and is thus removed from
      * the Navigator's children list. This breaks expected trackpad
      * scrolling behaviour, at least on macOS.
-     * 
+     * <p>
      * So here we take over event-bubbling duties for ScrollEvent
      * and push them ourselves directly to the given owner.
      */
@@ -134,12 +133,12 @@ final class CellListManager<T, C extends Cell<T, ? extends Node>> {
 
     private void presentCellsChanged(QuasiListModification<? extends C> mod) {
         // add removed cells back to the pool
-        for(C cell: mod.getRemoved()) {
+        for (C cell : mod.getRemoved()) {
             cellPool.acceptCell(cell);
         }
 
         // update indices of added cells and cells after the added cells
-        for(int i = mod.getFrom(); i < presentCells.size(); ++i) {
+        for (int i = mod.getFrom(); i < presentCells.size(); ++i) {
             presentCells.get(i).updateIndex(cells.indexOfMemoizedItem(i));
         }
     }

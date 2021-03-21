@@ -1,20 +1,19 @@
-package org.fxmisc.flowless;
-
-import java.util.Optional;
-import java.util.OptionalInt;
+package io.github.palexdev.flowless;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.layout.Region;
-
-import org.fxmisc.flowless.VirtualFlow.Gravity;
+import io.github.palexdev.flowless.VirtualFlow.Gravity;
 import org.reactfx.Subscription;
 import org.reactfx.collection.LiveList;
 import org.reactfx.collection.MemoizationList;
 import org.reactfx.collection.QuasiListChange;
 import org.reactfx.collection.QuasiListModification;
+
+import java.util.Optional;
+import java.util.OptionalInt;
 
 /**
  * Responsible for laying out cells' nodes within the viewport based on a single anchor node. In a layout call,
@@ -24,8 +23,7 @@ import org.reactfx.collection.QuasiListModification;
  * fill up the entire viewport), the displayed cells are repositioned towards the "ground," based on the
  * {@link VirtualFlow}'s {@link Gravity} value, and any remaining unused space counts as the "sky."
  */
-final class Navigator<T, C extends Cell<T, ?>>
-extends Region implements TargetPositionVisitor {
+final class Navigator<T, C extends Cell<T, ?>> extends Region implements TargetPositionVisitor {
     private final CellListManager<T, C> cellListManager;
     private final MemoizationList<C> cells;
     private final CellPositioner<T, C> positioner;
@@ -67,15 +65,15 @@ extends Region implements TargetPositionVisitor {
     protected void layoutChildren() {
         // invalidate breadth for each cell that has dirty layout
         int n = cells.getMemoizedCount();
-        for(int i = 0; i < n; ++i) {
+        for (int i = 0; i < n; ++i) {
             int j = cells.indexOfMemoizedItem(i);
             Node node = cells.get(j).getNode();
-            if(node instanceof Parent && ((Parent) node).isNeedsLayout()) {
+            if (node instanceof Parent && ((Parent) node).isNeedsLayout()) {
                 sizeTracker.forgetSizeOf(j);
             }
         }
 
-        if(!cells.isEmpty()) {
+        if (!cells.isEmpty()) {
             targetPosition.clamp(cells.size())
                     .accept(this);
         }
@@ -103,21 +101,20 @@ extends Region implements TargetPositionVisitor {
     private TargetPosition getCurrentPosition() {
         if (cellListManager.getLazyCellList().getMemoizedCount() == 0) {
             return TargetPosition.BEGINNING;
-        }
-        else {
+        } else {
             C cell = positioner.getVisibleCell(firstVisibleIndex);
             return new StartOffStart(firstVisibleIndex, orientation.minY(cell));
         }
     }
 
     private void itemsChanged(QuasiListChange<?> ch) {
-        for(QuasiListModification<?> mod: ch) {
+        for (QuasiListModification<?> mod : ch) {
             targetPosition = targetPosition.transformByChange(
                     mod.getFrom(), mod.getRemovedSize(), mod.getAddedSize());
         }
         requestLayout(); // TODO: could optimize to only request layout if
-                         // target position changed or cells in the viewport
-                         // are affected
+        // target position changed or cells in the viewport
+        // are affected
     }
 
     void showLengthRegion(int itemIndex, double fromY, double toY) {
@@ -127,58 +124,58 @@ extends Region implements TargetPositionVisitor {
 
     @Override
     public void visit(StartOffStart targetPosition) {
-        cropToNeighborhoodOf( targetPosition.itemIndex );  // Fix for issue #70 (!)
-        positioner.placeStartAt( targetPosition.itemIndex, targetPosition.offsetFromStart );
+        cropToNeighborhoodOf(targetPosition.itemIndex);  // Fix for issue #70 (!)
+        positioner.placeStartAt(targetPosition.itemIndex, targetPosition.offsetFromStart);
         fillViewportFrom(targetPosition.itemIndex);
     }
 
     @Override
     public void visit(EndOffEnd targetPosition) {
-        cropToNeighborhoodOf( targetPosition.itemIndex );  // Related to issue #70 (?)
-        positioner.placeEndFromEnd( targetPosition.itemIndex, targetPosition.offsetFromEnd );
+        cropToNeighborhoodOf(targetPosition.itemIndex);  // Related to issue #70 (?)
+        positioner.placeEndFromEnd(targetPosition.itemIndex, targetPosition.offsetFromEnd);
         fillViewportFrom(targetPosition.itemIndex);
     }
 
-    private void cropToNeighborhoodOf( int itemIndex ) {
-        int begin = Math.max( 0, getFirstVisibleIndex() );
-        int end = Math.max( itemIndex, getLastVisibleIndex() );
-        positioner.cropTo( Math.min( begin, itemIndex ), end+1 );
+    private void cropToNeighborhoodOf(int itemIndex) {
+        int begin = Math.max(0, getFirstVisibleIndex());
+        int end = Math.max(itemIndex, getLastVisibleIndex());
+        positioner.cropTo(Math.min(begin, itemIndex), end + 1);
     }
 
     @Override
     public void visit(MinDistanceTo targetPosition) {
         Optional<C> cell = positioner.getCellIfVisible(targetPosition.itemIndex);
-        if(cell.isPresent()) {
+        if (cell.isPresent()) {
             placeToViewport(targetPosition.itemIndex, targetPosition.minY, targetPosition.maxY);
         } else {
             OptionalInt prevVisible;
             OptionalInt nextVisible;
-            if((prevVisible = positioner.lastVisibleBefore(targetPosition.itemIndex)).isPresent()) {
+            if ((prevVisible = positioner.lastVisibleBefore(targetPosition.itemIndex)).isPresent()) {
                 // Try keeping prevVisible in place:
                 // fill the viewport, see if the target item appeared.
                 fillForwardFrom(prevVisible.getAsInt());
                 cell = positioner.getCellIfVisible(targetPosition.itemIndex);
-                if(cell.isPresent()) {
+                if (cell.isPresent()) {
                     placeToViewport(targetPosition.itemIndex, targetPosition.minY, targetPosition.maxY);
-                } else if(targetPosition.maxY.isFromStart()) {
+                } else if (targetPosition.maxY.isFromStart()) {
                     placeStartOffEndMayCrop(targetPosition.itemIndex, -targetPosition.maxY.getValue());
                 } else {
                     placeEndOffEndMayCrop(targetPosition.itemIndex, -targetPosition.maxY.getValue());
                 }
-            } else if((nextVisible = positioner.firstVisibleAfter(targetPosition.itemIndex + 1)).isPresent()) {
+            } else if ((nextVisible = positioner.firstVisibleAfter(targetPosition.itemIndex + 1)).isPresent()) {
                 // Try keeping nextVisible in place:
                 // fill the viewport, see if the target item appeared.
                 fillBackwardFrom(nextVisible.getAsInt());
                 cell = positioner.getCellIfVisible(targetPosition.itemIndex);
-                if(cell.isPresent()) {
+                if (cell.isPresent()) {
                     placeToViewport(targetPosition.itemIndex, targetPosition.minY, targetPosition.maxY);
-                } else if(targetPosition.minY.isFromStart()) {
+                } else if (targetPosition.minY.isFromStart()) {
                     placeStartAtMayCrop(targetPosition.itemIndex, -targetPosition.minY.getValue());
                 } else {
                     placeEndOffStartMayCrop(targetPosition.itemIndex, -targetPosition.minY.getValue());
                 }
             } else {
-                if(targetPosition.minY.isFromStart()) {
+                if (targetPosition.minY.isFromStart()) {
                     placeStartAtMayCrop(targetPosition.itemIndex, -targetPosition.minY.getValue());
                 } else {
                     placeEndOffStartMayCrop(targetPosition.itemIndex, -targetPosition.minY.getValue());
@@ -190,22 +187,22 @@ extends Region implements TargetPositionVisitor {
 
     /**
      * Get the index of the first visible cell (at the time of the last layout).
-     * 
+     *
      * @return The index of the first visible cell
      */
     public int getFirstVisibleIndex() {
         return firstVisibleIndex;
     }
-    
+
     /**
      * Get the index of the last visible cell (at the time of the last layout).
-     * 
+     *
      * @return The index of the last visible cell
      */
     public int getLastVisibleIndex() {
         return lastVisibleIndex;
     }
-    
+
     private void placeToViewport(int itemIndex, Offset from, Offset to) {
         C cell = positioner.getVisibleCell(itemIndex);
         double fromY = from.isFromStart()
@@ -248,8 +245,8 @@ extends Region implements TargetPositionVisitor {
         double spaceAfter = Math.max(0, sizeTracker.getViewportLength() - additionalOffset);
 
         Optional<Double> avgLen = sizeTracker.getAverageLengthEstimate();
-        int itemsBefore = avgLen.map(l -> spaceBefore/l).orElse(5.0).intValue();
-        int itemsAfter = avgLen.map(l -> spaceAfter/l).orElse(5.0).intValue();
+        int itemsBefore = avgLen.map(l -> spaceBefore / l).orElse(5.0).intValue();
+        int itemsAfter = avgLen.map(l -> spaceAfter / l).orElse(5.0).intValue();
 
         positioner.cropTo(itemIndex - itemsBefore, itemIndex + 1 + itemsAfter);
     }
@@ -275,7 +272,7 @@ extends Region implements TargetPositionVisitor {
     int fillForwardFrom0(int itemIndex, double upTo) {
         double max = orientation.maxY(positioner.getVisibleCell(itemIndex));
         int i = itemIndex;
-        while(max < upTo && i < cellListManager.getLazyCellList().size() - 1) {
+        while (max < upTo && i < cellListManager.getLazyCellList().size() - 1) {
             ++i;
             C c = positioner.placeStartAt(i, max);
             max = orientation.maxY(c);
@@ -305,7 +302,7 @@ extends Region implements TargetPositionVisitor {
     int fillBackwardFrom0(int itemIndex, double upTo) {
         double min = orientation.minY(positioner.getVisibleCell(itemIndex));
         int i = itemIndex;
-        while(min > upTo && i > 0) {
+        while (min > upTo && i > 0) {
             --i;
             C c = positioner.placeEndFromStart(i, min);
             min = orientation.minY(c);
@@ -327,7 +324,7 @@ extends Region implements TargetPositionVisitor {
 
         // if ground not reached, shift cells to the ground
         double gapBefore = distanceFromGround(ground);
-        if(gapBefore > 0) {
+        if (gapBefore > 0) {
             shiftCellsTowardsGround(ground, itemIndex, gapBefore);
         }
 
@@ -336,7 +333,7 @@ extends Region implements TargetPositionVisitor {
 
         // if sky not reached, add more cells under the ground and then shift
         double gapAfter = distanceFromSky(sky);
-        if(gapAfter > 0) {
+        if (gapAfter > 0) {
             ground = fillTowardsGroundFrom0(ground, -gapAfter);
             double extraBefore = -distanceFromGround(ground);
             double shift = Math.min(gapAfter, extraBefore);
@@ -346,11 +343,11 @@ extends Region implements TargetPositionVisitor {
         // crop to the visible cells
         int first = Math.min(ground, sky);
         int last = Math.max(ground, sky);
-        while(first < last &&
+        while (first < last &&
                 orientation.maxY(positioner.getVisibleCell(first)) <= 0.0) {
             ++first;
         }
-        while(last > first &&
+        while (last > first &&
                 orientation.minY(positioner.getVisibleCell(last)) >= sizeTracker.getViewportLength()) {
             --last;
         }
@@ -393,14 +390,14 @@ extends Region implements TargetPositionVisitor {
 
     private void shiftCellsTowardsGround(
             int groundCellIndex, int lastCellIndex, double amount) {
-        if(gravity.get() == Gravity.FRONT) {
+        if (gravity.get() == Gravity.FRONT) {
             assert groundCellIndex <= lastCellIndex;
-            for(int i = groundCellIndex; i <= lastCellIndex; ++i) {
+            for (int i = groundCellIndex; i <= lastCellIndex; ++i) {
                 positioner.shiftCellBy(positioner.getVisibleCell(i), -amount);
             }
         } else {
             assert groundCellIndex >= lastCellIndex;
-            for(int i = groundCellIndex; i >= lastCellIndex; --i) {
+            for (int i = groundCellIndex; i >= lastCellIndex; --i) {
                 positioner.shiftCellBy(positioner.getVisibleCell(i), amount);
             }
         }

@@ -1,19 +1,19 @@
-package org.fxmisc.flowless;
+package io.github.palexdev.flowless;
 
 /**
  * Defines where the {@link Navigator} should place the anchor cell's node in the viewport. Its three implementations
  * are {@link StartOffStart}, {@link EndOffEnd}, and {@link MinDistanceTo}.
  */
 interface TargetPosition {
-    static TargetPosition BEGINNING = new StartOffStart(0, 0.0);
+    TargetPosition BEGINNING = new StartOffStart(0, 0.0);
 
     /**
      * When the list of items, those displayed in the viewport, and those that are not, are modified, transforms
      * this change to account for those modifications.
      *
-     * @param pos the cell index where the change begins
+     * @param pos         the cell index where the change begins
      * @param removedSize the amount of cells that were removed, starting from {@code pos}
-     * @param addedSize the amount of cells that were added, starting from {@code pos}
+     * @param addedSize   the amount of cells that were added, starting from {@code pos}
      */
     TargetPosition transformByChange(int pos, int removedSize, int addedSize);
 
@@ -38,7 +38,9 @@ interface TargetPosition {
 interface TargetPositionVisitor {
 
     void visit(StartOffStart targetPosition);
+
     void visit(EndOffEnd targetPosition);
+
     void visit(MinDistanceTo targetPosition);
 }
 
@@ -58,10 +60,10 @@ final class StartOffStart implements TargetPosition {
     @Override
     public TargetPosition transformByChange(
             int pos, int removedSize, int addedSize) {
-        if(itemIndex >= pos + removedSize) {
+        if (itemIndex >= pos + removedSize) {
             // change before the target item, just update item index
             return new StartOffStart(itemIndex - removedSize + addedSize, offsetFromStart);
-        } else if(itemIndex >= pos) {
+        } else if (itemIndex >= pos) {
             // target item deleted
             if (addedSize == removedSize) {
                 return this;
@@ -91,12 +93,12 @@ final class StartOffStart implements TargetPosition {
     }
 
     static int clamp(int idx, int size) {
-        if(size < 0) {
+        if (size < 0) {
             throw new IllegalArgumentException("size cannot be negative: " + size);
         }
-        if(idx <= 0) {
+        if (idx <= 0) {
             return 0;
-        } else if(idx >= size) {
+        } else if (idx >= size) {
             return size - 1;
         } else {
             return idx;
@@ -120,10 +122,10 @@ final class EndOffEnd implements TargetPosition {
     @Override
     public TargetPosition transformByChange(
             int pos, int removedSize, int addedSize) {
-        if(itemIndex >= pos + removedSize) {
+        if (itemIndex >= pos + removedSize) {
             // change before the target item, just update item index
             return new EndOffEnd(itemIndex - removedSize + addedSize, offsetFromEnd);
-        } else if(itemIndex >= pos) {
+        } else if (itemIndex >= pos) {
             // target item deleted
             if (addedSize == removedSize) {
                 return this;
@@ -171,10 +173,10 @@ final class MinDistanceTo implements TargetPosition {
     @Override
     public TargetPosition transformByChange(
             int pos, int removedSize, int addedSize) {
-        if(itemIndex >= pos + removedSize) {
+        if (itemIndex >= pos + removedSize) {
             // change before the target item, just update item index
             return new MinDistanceTo(itemIndex - removedSize + addedSize, minY, maxY);
-        } else if(itemIndex >= pos) {
+        } else if (itemIndex >= pos) {
             // target item deleted
             if (addedSize == removedSize) {
                 return this;

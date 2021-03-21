@@ -1,9 +1,9 @@
-package org.fxmisc.flowless;
+package io.github.palexdev.flowless;
+
+import javafx.scene.Node;
 
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
-
-import javafx.scene.Node;
 
 /**
  * Provides efficient memory usage by wrapping a {@link Node} within this object and reusing it when
@@ -12,13 +12,17 @@ import javafx.scene.Node;
 @FunctionalInterface
 public interface Cell<T, N extends Node> {
     static <T, N extends Node> Cell<T, N> wrapNode(N node) {
-        return new Cell<T, N>() {
+        return new Cell<>() {
 
             @Override
-            public N getNode() { return node; }
+            public N getNode() {
+                return node;
+            }
 
             @Override
-            public String toString() { return node.toString(); }
+            public String toString() {
+                return node.toString();
+            }
         };
     }
 

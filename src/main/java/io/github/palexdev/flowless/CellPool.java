@@ -1,4 +1,4 @@
-package org.fxmisc.flowless;
+package io.github.palexdev.flowless;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -22,7 +22,7 @@ final class CellPool<T, C extends Cell<T, ?>> {
      */
     public C getCell(T item) {
         C cell = pool.poll();
-        if(cell != null) {
+        if (cell != null) {
             cell.updateItem(item);
         } else {
             cell = cellFactory.apply(item);
@@ -36,7 +36,7 @@ final class CellPool<T, C extends Cell<T, ?>> {
      */
     public void acceptCell(C cell) {
         cell.reset();
-        if(cell.isReusable()) {
+        if (cell.isReusable()) {
             pool.add(cell);
         } else {
             cell.dispose();
@@ -47,7 +47,7 @@ final class CellPool<T, C extends Cell<T, ?>> {
      * Disposes the cell pool and prevents any memory leaks.
      */
     public void dispose() {
-        for(C cell: pool) {
+        for (C cell : pool) {
             cell.dispose();
         }
 

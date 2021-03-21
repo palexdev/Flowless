@@ -1,141 +1,82 @@
-version = '0.6.4-SNAPSHOT'
+plugins {
+    id 'java-library'
+    id 'org.openjfx.javafxplugin' version '0.0.9'
 
-apply plugin: 'java'
-apply plugin: 'eclipse'
-apply plugin: 'osgi'
-apply plugin: 'maven-publish'
-apply plugin: 'signing'
-
-buildscript {
-    repositories {
-        jcenter()
-    }
+    id 'biz.aQute.bnd.builder' version '5.2.0'
+    id 'com.vanniktech.maven.publish' version '0.13.0'
 }
+
+group 'io.github.palexdev'
+version '0.7.0'
 
 repositories {
     mavenCentral()
     jcenter()
 }
 
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
-
-group = 'org.fxmisc.flowless'
-project.archivesBaseName = 'flowless'
+compileJava {
+    sourceCompatibility = '11'
+    targetCompatibility = '11'
+}
 
 dependencies {
-    compile 'org.reactfx:reactfx:2.0-M5'
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    testCompile "org.testfx:testfx-core:4.0.11-alpha"
-    testCompile ("org.testfx:testfx-junit:4.0.11-alpha") {
-        exclude(group: "junit", module: "junit")
-    }
-    testCompile "org.testfx:openjfx-monocle:8u76-b04"
+    testImplementation "org.testfx:testfx-core:4.0.16-alpha"
+    testImplementation "junit:junit:4.13.1"
+    testImplementation "org.testfx:testfx-junit:4.0.16-alpha"
+
+    implementation 'org.reactfx:reactfx:2.0-M5'
+}
+
+javafx {
+    version = "15.0.1"
+    modules = [ 'javafx.controls' ]
 }
 
 javadoc {
-    // ignore missing Javadoc comments or tags
-    options.addStringOption('Xdoclint:all,-missing', '-quiet')
+    excludes = ['**/*.html', 'META-INF/**']
 
-    // support for JavaFX properties
-    options.addBooleanOption('javafx', true)
-
-    options.links = [
-            // resolve links to Java and JavaFX Javadocs
-            'http://docs.oracle.com/javase/8/docs/api/',
-            'http://docs.oracle.com/javase/8/javafx/api/',
-
-            // resolve links to ReactFX
-            'http://www.reactfx.org/javadoc/2.0-M5/'
-    ]
-}
-
-task fatJar(type: Jar, dependsOn: classes) {
-    appendix = 'fat'
-    from sourceSets.main.output
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    options.use = true
+    options.splitIndex = true
+    options.encoding = 'UTF-8'
+    options.author = true
+    options.version = true
+    options.windowTitle = "$project.name $project.version API"
+    options.docTitle = "$project.name $project.version API"
+    options.links = ['https://docs.oracle.com/en/java/javase/11/docs/api',
+                     'https://openjfx.io/javadoc/15']
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from 'build/docs/javadoc'
+    archiveClassifier.set('javadoc')
+    from javadoc.destinationDir
 }
 
-task sourcesJar(type: Jar) {
+task sourcesJarBuild(type: Jar, dependsOn: classes) {
+    archiveClassifier.set('sources')
     from sourceSets.main.allSource
-    classifier = 'sources'
 }
 
 artifacts {
-    archives jar
-
     archives javadocJar
-    archives sourcesJar
+    archives sourcesJarBuild
+    archives jar
 }
 
-def doUploadArchives = project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')
-publish.onlyIf { doUploadArchives }
-
-if(doUploadArchives) {
-    publishing {
-        repositories {
-            maven {
-               def releasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-               def snapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots"
-               url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
-                credentials {
-                    username = "${sonatypeUsername}"
-                    password = "${sonatypePassword}"
-                }
-            }
-        }
-        publications {
-            flowless(MavenPublication) {
-                from components.java
-                artifact sourcesJar
-                artifact javadocJar
-                pom {
-                    name = 'flowless'
-                    packaging = 'jar'
-                    description = 'Efficient VirtualFlow for JavaFX.'
-                    url = 'https://github.com/FXMisc/Flowless/#flowless'
-               
-                    scm {
-                        url = 'scm:git@github.com:FXMisc/flowless.git'
-                        connection = 'scm:git@github.com:FXMisc/Flowless.git'
-                        developerConnection = 'scm:git@github.com:FXMisc/Flowless.git'
-                    }
-               
-                    licenses {
-                        license {
-                            name = 'The BSD 2-Clause License'
-                            url = 'http://opensource.org/licenses/BSD-2-Clause'
-                            distribution = 'repo'
-                        }
-                    }
-               
-                    developers {
-                        developer {
-                            name = 'Tomas Mikula'
-                        }
-                        developer {
-                            name = 'Jordan Martinez'
-                        }
-                   }
-                }
-            }
-        }
-    }
-    
-    signing {
-        sign publishing.publications.flowless
+jar {
+    manifest {
+        attributes(
+                'Bundle-Name': project.name,
+                'Bundle-Description': "An updated version of Flowless",
+                'Bundle-SymbolicName': 'io.github.palexdev',
+                'Export-Package': 'io.github.palexdev.flowless.*'
+        )
     }
 }
 
-assemble.dependsOn fatJar
-
-task getVersion {
-    doLast {
-        println version
+task removeBnd(type: Delete) {
+    delete fileTree(project.buildDir) {
+        include '**/*.bnd'
     }
 }
+
+build.dependsOn removeBnd

@@ -1,4 +1,4 @@
-package org.fxmisc.flowless;
+package io.github.palexdev.flowless;
 
 import javafx.scene.Node;
 import javafx.scene.layout.Region;
@@ -26,12 +26,12 @@ import org.reactfx.value.Var;
  */
 public class ScaledVirtualized<V extends Node & Virtualized> extends Region implements Virtualized {
     private final V content;
-    private Scale zoom = new Scale();
+    private final Scale zoom = new Scale();
 
-    private Val<Double> estHeight;
-    private Val<Double> estWidth;
-    private Var<Double> estScrollX;
-    private Var<Double> estScrollY;
+    private final Val<Double> estHeight;
+    private final Val<Double> estWidth;
+    private final Var<Double> estScrollX;
+    private final Var<Double> estScrollY;
 
     public ScaledVirtualized(V content) {
         super();
@@ -60,9 +60,9 @@ public class ScaledVirtualized<V extends Node & Virtualized> extends Region impl
                 scrollY -> scrollY / zoom.getY()
         );
 
-        zoom.xProperty()     .addListener((obs, ov, nv) -> requestLayout());
-        zoom.yProperty()     .addListener((obs, ov, nv) -> requestLayout());
-        zoom.zProperty()     .addListener((obs, ov, nv) -> requestLayout());
+        zoom.xProperty().addListener((obs, ov, nv) -> requestLayout());
+        zoom.yProperty().addListener((obs, ov, nv) -> requestLayout());
+        zoom.zProperty().addListener((obs, ov, nv) -> requestLayout());
         zoom.pivotXProperty().addListener((obs, ov, nv) -> requestLayout());
         zoom.pivotYProperty().addListener((obs, ov, nv) -> requestLayout());
         zoom.pivotZProperty().addListener((obs, ov, nv) -> requestLayout());
@@ -72,7 +72,7 @@ public class ScaledVirtualized<V extends Node & Virtualized> extends Region impl
     protected void layoutChildren() {
         double width = getLayoutBounds().getWidth();
         double height = getLayoutBounds().getHeight();
-        content.resize(width / zoom.getX(), height/ zoom.getY());
+        content.resize(width / zoom.getX(), height / zoom.getY());
     }
 
     @Override

@@ -1,19 +1,19 @@
-package org.fxmisc.flowless;
+package io.github.palexdev.flowless;
+
+import javafx.scene.Node;
 
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
-
-import javafx.scene.Node;
 
 /**
  * Factory class for wrapping a {@link Cell} and running additional code before/after specific methods
  */
 abstract class CellWrapper<T, N extends Node, C extends Cell<T, N>>
-implements Cell<T, N> {
+        implements Cell<T, N> {
 
-    public static <T, N extends Node,C extends Cell<T, N>>
+    public static <T, N extends Node, C extends Cell<T, N>>
     CellWrapper<T, N, C> beforeDispose(C cell, Runnable action) {
-        return new CellWrapper<T, N, C>(cell) {
+        return new CellWrapper<>(cell) {
             @Override
             public void dispose() {
                 action.run();
@@ -22,9 +22,9 @@ implements Cell<T, N> {
         };
     }
 
-    public static <T, N extends Node,C extends Cell<T, N>>
+    public static <T, N extends Node, C extends Cell<T, N>>
     CellWrapper<T, N, C> afterDispose(C cell, Runnable action) {
-        return new CellWrapper<T, N, C>(cell) {
+        return new CellWrapper<>(cell) {
             @Override
             public void dispose() {
                 super.dispose();
@@ -33,9 +33,9 @@ implements Cell<T, N> {
         };
     }
 
-    public static <T, N extends Node,C extends Cell<T, N>>
+    public static <T, N extends Node, C extends Cell<T, N>>
     CellWrapper<T, N, C> beforeReset(C cell, Runnable action) {
-        return new CellWrapper<T, N, C>(cell) {
+        return new CellWrapper<>(cell) {
             @Override
             public void reset() {
                 action.run();
@@ -44,9 +44,9 @@ implements Cell<T, N> {
         };
     }
 
-    public static <T, N extends Node,C extends Cell<T, N>>
+    public static <T, N extends Node, C extends Cell<T, N>>
     CellWrapper<T, N, C> afterReset(C cell, Runnable action) {
-        return new CellWrapper<T, N, C>(cell) {
+        return new CellWrapper<>(cell) {
             @Override
             public void reset() {
                 super.reset();
@@ -55,9 +55,9 @@ implements Cell<T, N> {
         };
     }
 
-    public static <T, N extends Node,C extends Cell<T, N>>
+    public static <T, N extends Node, C extends Cell<T, N>>
     CellWrapper<T, N, C> beforeUpdateItem(C cell, Consumer<? super T> action) {
-        return new CellWrapper<T, N, C>(cell) {
+        return new CellWrapper<>(cell) {
             @Override
             public void updateItem(T item) {
                 action.accept(item);
@@ -66,9 +66,9 @@ implements Cell<T, N> {
         };
     }
 
-    public static <T, N extends Node,C extends Cell<T, N>>
+    public static <T, N extends Node, C extends Cell<T, N>>
     CellWrapper<T, N, C> afterUpdateItem(C cell, Consumer<? super T> action) {
-        return new CellWrapper<T, N, C>(cell) {
+        return new CellWrapper<>(cell) {
             @Override
             public void updateItem(T item) {
                 super.updateItem(item);
@@ -77,9 +77,9 @@ implements Cell<T, N> {
         };
     }
 
-    public static <T, N extends Node,C extends Cell<T, N>>
+    public static <T, N extends Node, C extends Cell<T, N>>
     CellWrapper<T, N, C> beforeUpdateIndex(C cell, IntConsumer action) {
-        return new CellWrapper<T, N, C>(cell) {
+        return new CellWrapper<>(cell) {
             @Override
             public void updateIndex(int index) {
                 action.accept(index);
@@ -88,9 +88,9 @@ implements Cell<T, N> {
         };
     }
 
-    public static <T, N extends Node,C extends Cell<T, N>>
+    public static <T, N extends Node, C extends Cell<T, N>>
     CellWrapper<T, N, C> afterUpdateIndex(C cell, IntConsumer action) {
-        return new CellWrapper<T, N, C>(cell) {
+        return new CellWrapper<>(cell) {
             @Override
             public void updateIndex(int index) {
                 super.updateIndex(index);

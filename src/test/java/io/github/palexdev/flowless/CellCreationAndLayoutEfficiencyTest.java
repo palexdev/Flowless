@@ -1,4 +1,4 @@
-package org.fxmisc.flowless;
+package io.github.palexdev.flowless;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -14,15 +14,15 @@ import static org.junit.Assert.assertEquals;
 public class CellCreationAndLayoutEfficiencyTest extends FlowlessTestBase {
 
     private ObservableList<String> items;
-    private Counter cellCreations = new Counter();
-    private Counter cellLayouts = new Counter();
+    private final Counter cellCreations = new Counter();
+    private final Counter cellLayouts = new Counter();
     private VirtualFlow<String, ?> flow;
 
     @Override
     public void start(Stage stage) {
         // set up items
         items = FXCollections.observableArrayList();
-        for(int i = 0; i < 20; ++i) {
+        for (int i = 0; i < 20; ++i) {
             items.addAll("red", "green", "blue", "purple");
         }
 
@@ -63,6 +63,7 @@ public class CellCreationAndLayoutEfficiencyTest extends FlowlessTestBase {
         assertEquals(1, cellCreations.getAndReset());
         assertEquals(1, cellLayouts.getAndReset());
     }
+
     @Test
     public void updating_an_item_outside_viewport_does_not_create_or_lay_out_cell() {
         // update an item outside the viewport

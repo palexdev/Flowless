@@ -1,4 +1,4 @@
-package org.fxmisc.flowless;
+package io.github.palexdev.flowless;
 
 public class Counter {
     private int count = 0;

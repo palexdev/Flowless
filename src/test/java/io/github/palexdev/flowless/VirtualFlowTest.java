@@ -1,14 +1,14 @@
-package org.fxmisc.flowless;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Test;
+package io.github.palexdev.flowless;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.shape.Rectangle;
+import org.junit.Test;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import static org.junit.Assert.*;
 
 public class VirtualFlowTest extends FlowlessTestBase {
 
@@ -36,10 +36,21 @@ public class VirtualFlowTest extends FlowlessTestBase {
         vf.resize(100, 100); // size of VirtualFlow less than that of the cell
         vf.layout();
 
-        vf.setLengthOffset(10.0);
-        vf.setLengthOffset(10.0);
+        setLengthOffset(vf);
+        setLengthOffset(vf);
+
         vf.layout();
         assertEquals(-10.0, rect.getBoundsInParent().getMinY(), 0.01);
+    }
+
+    private void setLengthOffset(VirtualFlow<Rectangle, Cell<Rectangle, Rectangle>> vf) {
+        try {
+            Method method = VirtualFlow.class.getDeclaredMethod("setLengthOffset", double.class);
+            method.setAccessible(true);
+            method.invoke(vf, 10.0);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
@@ -53,14 +64,14 @@ public class VirtualFlowTest extends FlowlessTestBase {
         vf.resize(100, 450); // size of VirtualFlow enough to show several cells
         vf.layout();
 
-        ObservableList<Cell<Rectangle,Rectangle>> visibleCells = vf.visibleCells();
-        
+        ObservableList<Cell<Rectangle, Rectangle>> visibleCells = vf.visibleCells();
+
         vf.show(0);
         vf.layout();
         assertSame(visibleCells.get(0), vf.getCell(vf.getFirstVisibleIndex()));
         assertSame(visibleCells.get(visibleCells.size() - 1), vf.getCell(vf.getLastVisibleIndex()));
         assertTrue(vf.getFirstVisibleIndex() <= 0 && 0 <= vf.getLastVisibleIndex());
-        
+
         vf.show(50);
         vf.layout();
         assertSame(visibleCells.get(0), vf.getCell(vf.getFirstVisibleIndex()));

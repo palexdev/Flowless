@@ -1,8 +1,10 @@
-gradle.properties
-.gradle/
-build/
-.project
-.classpath
-.settings/
-/bin/
+# IntelliJ Idea
 .idea/
+build/
+out/
+
+# Gradle
+.gradle
+
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar
